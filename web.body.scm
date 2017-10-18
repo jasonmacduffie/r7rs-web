@@ -19,16 +19,6 @@
 (define (declare-html)
   (display "<!DOCTYPE html>\n"))
 
-(define (mime-xhtml . l)
-  (let ((mime-string (if (null? l)
-                         "Content-type: application/xhtml+xml; charset=UTF-8\n\n"
-                         "Content-type: application/xhtml+xml; charset=UTF-8\n\n")))
-    (display mime-string)))
-
-(define (declare-xhtml)
-(display
-  "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">"))
-
 (define (sxml->xml s)
   (cond
    ((list? s)

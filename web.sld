@@ -2,5 +2,5 @@
 (define-library (macduffie web)
   (import (scheme base)
           (scheme write))
-  (export print mime-html mime-xhtml declare-html declare-xhtml)
+  (export print mime-html declare-html)
   (include "./web.body.scm"))
