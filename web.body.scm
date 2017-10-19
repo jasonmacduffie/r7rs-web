@@ -59,10 +59,17 @@
             l)
   (newline))
 
-(define (args-ref key)
-  (let loop ((args (cdr (command-line))))
-    (if (null? args)
-        (error "args-ref" "Key does not exist" key)
-        (if (eq? key (string->symbol (car args)))
-            (cadr args)
-            (loop (cddr args))))))
+(define (read-entire-file path)
+  (let ((f (open-input-file path)))
+    (let loop ((out '())
+               (next (read-char f)))
+      (cond
+       ((eof-object? next)
+        (let ((result (list->string (reverse out))))
+          (close-input-port f)
+          result))
+       (else
+        (loop (cons next out) (read-char f)))))))
+
+(define (load-static path)
+  (display (read-entire-file path)))
