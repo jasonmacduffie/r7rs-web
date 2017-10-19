@@ -21,18 +21,41 @@
   ;; A value with a null type is a type.
   (null? (value-type v)))
 
-(define global '())
+(define global '(#(0) . #(0)))
 
-(define (add-global! name val)
-  (set! global (cons (cons name val) global)))
+(define (scope-add! scope name val)
+  (set-cdr! scope (cons (car scope) (cdr scope)))
+  (set-car! scope (cons name val)))
 
-(add-global! 'quote (syntax (lambda (expr scope)
+(define none-type (value '() '((name . "None"))))
+(define string-type (value '() '((name . "String"))))
+
+(define (make-procedure-type output-type input-types)
+  (value '() `((name . "Procedure")
+               (out-type . ,output-type)
+               (in-types . ,input-types))))
+
+(scope-add! global 'quote (syntax (lambda (expr scope)
                               (cadr expr))))
-(add-global! 'lambda (syntax (lambda (expr scope)
+(scope-add! global 'lambda (syntax (lambda (expr scope)
                                (eval-lambda expr scope))))
-(add-global! 'Number (value '() '(name . "Number")))
-(add-global! 'String (value '() '(name . "String")))
-(add-global! 'Boolean (value '() '(name . "Boolean")))
+(scope-add! global 'var (syntax (lambda (expr scope)
+                                  ;; (let NAME TYPE VALUE)
+                                  (scope-add! scope
+                                              (list-ref expr 1)
+                                              (value (eval-expr (list-ref expr 2) scope)
+                                                     (eval-expr (list-ref expr 3) scope))))))
+(scope-add! global 'Number (value '() '((name . "Number"))))
+(scope-add! global 'String string-type)
+(scope-add! global 'Boolean (value '() '((name . "Boolean"))))
+(scope-add! global 'None none-type)
+(scope-add! global 'print (value (make-procedure-type none-type (list string-type))
+                                 `((body . ,(lambda (scope)
+                                              (lambda (s)
+                                                (display s)))))))
+
+(define (get-procedure val scope)
+  ((cdr (assq 'body (value-contents val))) scope))
 
 (define (atom? expr)
   (not (or (pair? expr) (null? expr))))
@@ -44,30 +67,33 @@
         (let ((scope-value (assq expr scope)))
           (if scope-value
               (cdr scope-value)
-              '())) ;; Should be an error
+              (error "Unbound variable:" expr)))
         expr))
    ((null? expr)
-    '()) ;; Should be an error
+    (error "Empty application:" expr))
    ((not (symbol? (car expr)))
-    '()) ;; Should be an error
+    (error "Non-procedure application" expr))
    (else
     (let ((first-index (eval-expr (car expr) scope)))
       (if (syntax? first-index)
           ((syntax-op first-index) expr scope)
-          (apply-expr first-index (cdr p)))))))
+          (apply apply-expr scope first-index (cdr expr)))))))
+
+(define (apply-expr scope proc . args)
+  (apply (get-procedure proc scope) args))
 
 (define (eval-lambda expr scope)
-  ;; FORM: (lambda typ ((arg1 typ1) expr ...)
+  ;; FORM: (lambda TYP ((ARG1 TYP1) ...) EXPR ...)
   (let ((result-type (eval-expr (cadr expr) scope)))
     (unless (type? result-type)
       (error "eval-lambda" "Not a type" result-type))
     (let ((arg-types (map (lambda (p)
-                            (let ((result (eval-expr (cdr p) scope)))
+                            (let ((result (eval-expr (cadr p) scope)))
                               (unless (type? result)
                                 (error "eval-lambda" "Not a type" result-type))
                               result))
                           (car (cddr expr)))))
-      100)))
+      (value (make-procedure-type result-type arg-types) '()))))
 
 (define (repl)
   (let ((next-expr (read)))
