@@ -37,3 +37,11 @@
               (display (sxml->xml s)))
             l)
   (newline))
+
+(define (args-ref key)
+  (let loop ((args (cdr (command-line))))
+    (if (null? args)
+        (error "args-ref" "Key does not exist" key)
+        (if (eq? key (string->symbol (car args)))
+            (cadr args)
+            (loop (cddr args))))))
