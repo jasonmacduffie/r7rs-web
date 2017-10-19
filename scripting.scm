@@ -6,15 +6,20 @@
   (scheme read)
   (scheme write))
 
-(define-record-type <type>
-  (type name)
-  type?
-  (name type-name))
-
 (define-record-type <syntax>
   (syntax op)
   syntax?
   (op syntax-op))
+
+(define-record-type <value>
+  (value typ contents)
+  value?
+  (typ value-type)
+  (contents value-contents))
+
+(define (type? v)
+  ;; A value with a null type is a type.
+  (null? (value-type v)))
 
 (define global '())
 
@@ -25,9 +30,9 @@
                               (cadr expr))))
 (add-global! 'lambda (syntax (lambda (expr scope)
                                (eval-lambda expr scope))))
-(add-global! 'Number (type "Number"))
-(add-global! 'String (type "String"))
-(add-global! 'Boolean (type "Boolean"))
+(add-global! 'Number (value '() '(name . "Number")))
+(add-global! 'String (value '() '(name . "String")))
+(add-global! 'Boolean (value '() '(name . "Boolean")))
 
 (define (atom? expr)
   (not (or (pair? expr) (null? expr))))
