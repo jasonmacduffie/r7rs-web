@@ -13,6 +13,31 @@
                   (cons (car in)
                         (cons join-value out)))))))
 
+(define (rewrite-cond expr)
+  ;; cond is complicated enough to require a separate procedure
+  (if (null? (cdr expr))
+      '()
+      (let loop ((in (cddr expr))
+                 (out `(,@(rewrite-multiple-lines (cdadr expr))
+                        " ) { "
+                        ,@(rewrite-line (caadr expr))
+                        " if ( ")))
+        (if (null? in)
+            (reverse out)
+            (loop (cdr in)
+                  (append
+                   (if (eq? (caar in) 'else)
+                       `(" } "
+                         ,@(rewrite-multiple-lines (cdar in))
+                         " } else { ")
+                       `(
+                         " } "
+                         ,@(rewrite-multiple-lines (cdar in))
+                         " ) { "
+                         ,@(rewrite-line (caar in))
+                         " } else if ( "))
+                   out))))))
+
 (define (rewrite-line expr)
   (cond
    ((pair? expr)
@@ -67,6 +92,8 @@
         " ) { "
         ,@(rewrite-multiple-lines (cddr (cddr expr)))
         " } "))
+     ((eq? (car expr) 'cond)
+      (rewrite-cond expr))
      ((eq? (car expr) 'vector)
       `(" [ "
         ,(join-expressions (cdr expr) ",")
