@@ -20,22 +20,22 @@
       (let loop ((in (cddr expr))
                  (out `((" if ( "
                          ,@(rewrite-line (caadr expr))
-                         " ) { "
+                         " ) {\n"
                          ,@(rewrite-multiple-lines (cdadr expr))
-                         " } "))))
+                         "\n}\n"))))
         (if (null? in)
             (apply append (reverse out))
             (loop (cdr in)
                   (cons
                    (if (eq? (caar in) 'else)
-                       `(" else { "
+                       `(" else {\n"
                          ,@(rewrite-multiple-lines (cdar in))
-                         " } ")
+                         "\n}\n")
                        `(" else if ( "
                          ,@(rewrite-line (caar in))
-                         " ) { "
+                         " ) {\n"
                          ,@(rewrite-multiple-lines (cdar in))
-                         " } "))
+                         "\n}\n"))
                    out))))))
 
 (define (rewrite-line expr)
@@ -45,43 +45,43 @@
      ((eq? (car expr) 'lambda)
       `(" function ( "
         ,(join-strings (map symbol->string (cadr expr)) ",")
-        " )  { "
+        " )  {\n"
         ,@(rewrite-multiple-lines (cddr expr))
-        " } "))
+        " \n}\n"))
      ((eq? (car expr) 'begin)
-      `(" { "
+      `(" {\n"
         ,@(rewrite-multiple-lines (cdr expr))
-        " } "))
+        " \n}\n"))
      ((eq? (car expr) 'define)
       (if (list? (cadr expr))
           (error "rewrite-line" "not yet implemented: define function")
-          `(" var "
+          `("var "
             ,(symbol->string (cadr expr))
             " = "
             ,@(rewrite-line (list-ref expr 2))
-            " ; ")))
+            "\n")))
      ((eq? (car expr) 'set!)
       `(,(symbol->string (cadr expr))
         " = "
         ,@(rewrite-line (list-ref expr 2))
-        " ; "))
+        "\n"))
      ((eq? (car expr) 'if)
       `(" if ( "
         ,@(rewrite-line (cadr expr))
-        " ) { "
+        " ) {\n"
         ,@(rewrite-line (list-ref expr 2))
-        " } "
+        "\n}\n"
         ,@(if (< (length expr) 4)
               '()
-              `(" else { "
+              `(" else {\n"
                 ,@(rewrite-line (cadr (cddr expr)))
-                " } "))))
+                "\n}\n"))))
      ((eq? (car expr) 'while)
       `(" while ( "
         ,@(rewrite-line (cadr expr))
-        " ) { "
+        " ) {\n"
         ,@(rewrite-multiple-lines (cddr expr))
-        " } "))
+        "\n}\n"))
      ((eq? (car expr) 'for)
       `(" for ( "
         ,@(rewrite-line (list-ref expr 1))
@@ -89,9 +89,9 @@
         ,@(rewrite-line (list-ref expr 2))
         " ; "
         ,@(rewrite-line (list-ref expr 3))
-        " ) { "
+        " ) {\n"
         ,@(rewrite-multiple-lines (cddr (cddr expr)))
-        " } "))
+        "\n}\n"))
      ((eq? (car expr) 'cond)
       (rewrite-cond expr))
      ((eq? (car expr) 'vector)
@@ -99,14 +99,14 @@
         ,(join-expressions (cdr expr) ",")
         " ] "))
      ((eq? (car expr) 'object)
-      `(" { "
+      `(" {\n"
         ,(join-strings (map (lambda (p)
                               (string-append (format "~s" (symbol->string (car p)))
                                              ":"
                                              (apply string-append (rewrite-line (cdr p)))))
                             (cdr expr))
                        ",")
-        " } "))
+        "\n}\n"))
      ((eq? (car expr) '+)
       `(" ( "
         ,(join-expressions (cdr expr) "+")
@@ -150,7 +150,7 @@
      ((eq? (car expr) 'return)
       `(" return "
         ,@(rewrite-line (cadr expr))
-        " ; "))
+        "\n"))
      ((eq? (car expr) 'dot)
       `(,(join-strings (map symbol->string (cdr expr)) ".")))
      (else
