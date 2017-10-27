@@ -57,6 +57,16 @@
         " ) { "
         ,@(rewrite-multiple-lines (cddr expr))
         " } "))
+     ((eq? (car expr) 'for)
+      `(" for ( "
+        ,@(rewrite-line (list-ref expr 1))
+        " ; "
+        ,@(rewrite-line (list-ref expr 2))
+        " ; "
+        ,@(rewrite-line (list-ref expr 3))
+        " ) { "
+        ,@(rewrite-multiple-lines (cddr (cddr expr)))
+        " } "))
      ((eq? (car expr) 'vector)
       `(" [ "
         ,(join-expressions (cdr expr) ",")
