@@ -54,7 +54,10 @@
         " \n}\n"))
      ((eq? (car expr) 'define)
       (if (list? (cadr expr))
-          (error "rewrite-line" "not yet implemented: define function")
+          (rewrite-line
+           `(define ,(caadr expr)
+              (lambda ,(cdadr expr)
+                ,@(cddr expr))))
           `("var "
             ,(symbol->string (cadr expr))
             " = "
