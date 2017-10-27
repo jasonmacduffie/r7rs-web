@@ -100,8 +100,11 @@
       `(" return "
         ,@(rewrite-line (cadr expr))
         " ; "))
+     ((eq? (car expr) 'dot)
+      ;; (dot A B)
+      `(,(join-strings (map symbol->string (cdr expr)) ".")))
      (else
-      `(,(symbol->string (car expr))
+      `(,@(rewrite-line (car expr))
         " ( "
         ,(join-expressions (cdr expr) ",")
         " ) "))))
