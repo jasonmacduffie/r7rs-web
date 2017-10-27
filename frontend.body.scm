@@ -141,12 +141,17 @@
       `(" ( "
         ,(join-expressions (cdr expr) "==")
         " ) "))
+     ((eq? (car expr) 'ref)
+      `(" ( "
+        ,@(rewrite-line (cadr expr))
+        " [ "
+        ,@(rewrite-line (caddr expr))
+        " ] ) "))
      ((eq? (car expr) 'return)
       `(" return "
         ,@(rewrite-line (cadr expr))
         " ; "))
      ((eq? (car expr) 'dot)
-      ;; (dot A B)
       `(,(join-strings (map symbol->string (cdr expr)) ".")))
      (else
       `(,@(rewrite-line (car expr))
