@@ -18,25 +18,24 @@
   (if (null? (cdr expr))
       '()
       (let loop ((in (cddr expr))
-                 (out `(" } "
-                        ,@(rewrite-multiple-lines (cdadr expr))
-                        " ) { "
-                        ,@(rewrite-multiple-lines (caadr expr))
-                        " if ( ")))
-        (if (null? in)
-            (reverse out)
-            (loop (cdr in)
-                  (append
-                   (if (eq? (caar in) 'else)
-                       `(" } "
-                         ,@(rewrite-multiple-lines (cdar in))
-                         " else { ")
-                       `(
-                         " } "
-                         ,@(rewrite-multiple-lines (cdar in))
+                 (out `((" if ( "
+                         ,@(rewrite-line (caadr expr))
                          " ) { "
-                         ,@(rewrite-multiple-lines (caar in))
-                         " else if ( "))
+                         ,@(rewrite-multiple-lines (cdadr expr))
+                         " } "))))
+        (if (null? in)
+            (apply append (reverse out))
+            (loop (cdr in)
+                  (cons
+                   (if (eq? (caar in) 'else)
+                       `(" else { "
+                         ,@(rewrite-multiple-lines (cdar in))
+                         " } ")
+                       `(" else if ( "
+                         ,@(rewrite-line (caar in))
+                         " ) { "
+                         ,@(rewrite-multiple-lines (cdar in))
+                         " } "))
                    out))))))
 
 (define (rewrite-line expr)
