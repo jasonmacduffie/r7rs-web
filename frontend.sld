@@ -2,5 +2,5 @@
   (import (scheme base)
           (scheme write)
           (srfi 28))
-  (export script)
+  (export script generate-ecmascript)
   (include "./frontend.body.scm"))

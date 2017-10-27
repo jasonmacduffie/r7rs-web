@@ -57,10 +57,53 @@
         " ) { "
         ,@(rewrite-multiple-lines (cddr expr))
         " } "))
+     ((eq? (car expr) 'vector)
+      `(" [ "
+        ,(join-expressions (cdr expr) ",")
+        " ] "))
+     ((eq? (car expr) 'object)
+      `(" { "
+        ,(join-strings (map (lambda (p)
+                              (string-append (format "~s" (symbol->string (car p)))
+                                             ":"
+                                             (apply string-append (rewrite-line (cdr p)))))
+                            (cdr expr))
+                       ",")
+        " } "))
+     ((eq? (car expr) '+)
+      `(" ( "
+        ,(join-expressions (cdr expr) "+")
+        " ) "))
+     ((eq? (car expr) '-)
+      `(" ( "
+        ,@(rewrite-line (car expr))
+        " - ( "
+        ,(join-expressions (cddr expr) "+")
+        " )) "))
+     ((eq? (car expr) '*)
+      `(" ( "
+        ,(join-expressions (cdr expr) "*")
+        " ) "))
+     ((eq? (car expr) '/)
+      `(" ( "
+        ,@(rewrite-line (car expr))
+        " / ( "
+        ,(join-expressions (cddr expr) "*")
+        " )) "))
+     ((eq? (car expr) '%)
+      `(" (( "
+        ,@(rewrite-line (list-ref expr 1))
+        " ) % ( "
+        ,@(rewrite-line (list-ref expr 2))
+        " )) "))
+     ((eq? (car expr) 'return)
+      `(" return "
+        ,@(rewrite-line (cadr expr))
+        " ; "))
      (else
       `(,(symbol->string (car expr))
         " ( "
-        ,(join-expressions (cdr expr))
+        ,(join-expressions (cdr expr) ",")
         " ) "))))
    ((symbol? expr)
     `(" " ,(symbol->string expr) " "))
@@ -76,12 +119,15 @@
 (define (rewrite-multiple-lines exprs)
   (apply append (map rewrite-line exprs)))
 
-(define (join-expressions exprs)
+(define (join-expressions exprs join-value)
   (join-strings (map (lambda (l) (apply string-append l))
-                     (map rewrite-line exprs)) ","))
+                     (map rewrite-line exprs)) join-value))
 
 (define-syntax script
   (syntax-rules ()
     ((_ l ...)
      (display (apply string-append `("<script>" ,@(rewrite-multiple-lines '(l ...)) "</script>"))))))
+
+(define (generate-ecmascript . l)
+  (apply string-append (rewrite-multiple-lines l)))
 
