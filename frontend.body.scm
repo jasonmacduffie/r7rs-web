@@ -18,9 +18,10 @@
   (if (null? (cdr expr))
       '()
       (let loop ((in (cddr expr))
-                 (out `(,@(rewrite-multiple-lines (cdadr expr))
+                 (out `(" } "
+                        ,@(rewrite-multiple-lines (cdadr expr))
                         " ) { "
-                        ,@(rewrite-line (caadr expr))
+                        ,@(rewrite-multiple-lines (caadr expr))
                         " if ( ")))
         (if (null? in)
             (reverse out)
@@ -29,13 +30,13 @@
                    (if (eq? (caar in) 'else)
                        `(" } "
                          ,@(rewrite-multiple-lines (cdar in))
-                         " } else { ")
+                         " else { ")
                        `(
                          " } "
                          ,@(rewrite-multiple-lines (cdar in))
                          " ) { "
-                         ,@(rewrite-line (caar in))
-                         " } else if ( "))
+                         ,@(rewrite-multiple-lines (caar in))
+                         " else if ( "))
                    out))))))
 
 (define (rewrite-line expr)
