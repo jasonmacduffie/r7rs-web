@@ -133,6 +133,14 @@
         " ) % ( "
         ,@(rewrite-line (list-ref expr 2))
         " )) "))
+     ((eq? (car expr) '=)
+      `(" ( "
+        ,(join-expressions (cdr expr) "===")
+        " ) "))
+     ((eq? (car expr) '~=)
+      `(" ( "
+        ,(join-expressions (cdr expr) "==")
+        " ) "))
      ((eq? (car expr) 'return)
       `(" return "
         ,@(rewrite-line (cadr expr))
