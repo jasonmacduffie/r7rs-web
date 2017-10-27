@@ -1,0 +1,6 @@
+(define-library (macduffie frontend)
+  (import (scheme base)
+          (scheme write)
+          (srfi 28))
+  (export script)
+  (include "./frontend.body.scm"))
