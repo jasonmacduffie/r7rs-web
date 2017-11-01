@@ -109,24 +109,3 @@
   (script-name "SCRIPT_NAME")
   (server-port "SERVER_PORT")
   (server-software "SERVER_SOFTWARE"))
-
-
-#|
-          document-root http-cookie http-host http-referer
-          http-user-agent https path query-string
-          remote-addr remote-host remote-port remote-user
-          request-method request-uri script-filename
-          script-name server-port server-software))
-
-
-
-(define (query-string)
-  (get-environment-variable "QUERY_STRING"))
-
-(define (content-length)
-  (get-environment-variable "CONTENT_LENGTH"))
-
-(define (path-info)
-  (get-environment-variable "PATH_INFO"))
-
-|#
