@@ -3,10 +3,9 @@
   (import (scheme base)
           (scheme write)
           (scheme file)
-          (scheme load)
           (scheme process-context))
   (export print mime-html declare-html
-          (rename display print-raw) load load-static
+          (rename display print-raw) include load-static
           document-root http-cookie http-host http-referer
           http-user-agent https path query-string
           remote-addr remote-host remote-port remote-user
