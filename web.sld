@@ -4,7 +4,7 @@
           (scheme write)
           (scheme file)
           (scheme load)
-          (srfi 98))
+          (scheme process-context))
   (export print mime-html declare-html
           (rename display print-raw) load load-static
           document-root http-cookie http-host http-referer
